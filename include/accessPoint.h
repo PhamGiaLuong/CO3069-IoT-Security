@@ -8,6 +8,7 @@
 
 #define BOOT_PIN 0
 
+enum ConnectState { IDLE, CONNECTING, SUCCESS, FAILED };
 
 void webServerTask(void *pvParameters);
 

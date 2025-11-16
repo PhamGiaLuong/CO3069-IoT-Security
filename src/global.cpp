@@ -15,17 +15,19 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
   <title>Wi-Fi Settings</title>
   <style>
     :root {
-      --primary: #00bad1;
-      --light: #d6f4f8;     
-      --dark: #d6f4f8;
+      --primary: #007bff;
+      --success: #28a745;
+      --danger: #dc3545;
+      --warning: #ffc107;
+      --info: #17a2b8;
       --bg: #f6f8fa;
       --text: #333;
       --radius: 8px;
-      --shadow: 0 2px 5px rgba(214, 244, 248, 1);
+      --shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
 
     body {
-      font-family: "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       margin: 0;
       padding: 0;
@@ -33,6 +35,7 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
       justify-content: center;
       align-items: flex-start;
       min-height: 100vh;
+      color: var(--text);
     }
 
     .container {
@@ -42,7 +45,7 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       margin-top: 50px;
-      padding: 16px;
+      padding: 24px;
       box-sizing: border-box;
       animation: fadeIn 0.5s ease;
     }
@@ -50,6 +53,7 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
     h2 {
       text-align: center;
       color: var(--primary);
+      margin-top: 0;
       margin-bottom: 25px;
     }
 
@@ -61,13 +65,13 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
     label {
       display: block;
       font-size: 0.9rem;
-      color: var(--text);
       margin-bottom: 5px;
       font-weight: 500;
     }
 
-    input {
-  	  box-sizing: border-box;
+    input[type="text"],
+    input[type="password"] {
+      box-sizing: border-box;
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ccc;
@@ -78,55 +82,64 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
 
     input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 4px var(--primary);
+      box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
       outline: none;
     }
     
     button {
-      padding: 10px 18px;
+      padding: 12px 18px;
       font-size: 16px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.25s ease;
+      width: 100%;
+      background-color: var(--primary);
+      color: white;
+      font-weight: 500;
+    }
+
+    button:hover {
+      opacity: 0.85;
     }
     
-    #connectBtn {
-      background-color: var(--light);
-      color: var(--primary);
-      width: 100%;
-    }
-
-    #connectBtn:hover {
-      box-shadow: var(--shadow);
-      background: var(--dark);
-    }
-
-    #backBtn {
-      background-color: #e0e0e0;
-      color: #333;
-      margin-top: 10px;
-      width: 100%;
-    }
-
-    #backBtn:hover {
+    button:disabled {
       background-color: #ccc;
+      cursor: not-allowed;
     }
 
+    /* --- PHẦN STATUS MỚI --- */
     .status {
-      margin-top: 15px;
-      text-align: center;
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: var(--radius);
       font-size: 0.9rem;
-      color: #777;
+      text-align: center;
+      display: none; /* Ẩn mặc định */
     }
+    .status-info {
+      display: block;
+      background-color: #e6f7ff;
+      border: 1px solid #91d5ff;
+      color: #0056b3;
+    }
+    .status-success {
+      display: block;
+      background-color: #f6ffed;
+      border: 1px solid #b7eb8f;
+      color: #389e0d;
+    }
+    .status-error {
+      display: block;
+      background-color: #fff1f0;
+      border: 1px solid #ffa39e;
+      color: #cf1322;
+    }
+    /* --- Hết phần status mới --- */
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 480px) {
-      .container { padding: 20px; margin-top: 30px; }
     }
   </style>
 </head>
@@ -141,54 +154,112 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
 
       <div class="form-group">
         <label for="password">Wi-Fi Password</label>
-        <input type="password" id="password" name="password" placeholder="Enter password" required>
+        <input type="password" id="password" name="password" placeholder="Enter password">
       </div>
 
       <button id="connectBtn" type="submit">Connect</button>
-      <button id="backBtn" type="button" onclick="window.location='/'">Back</button>
-      <p class="status" id="statusText">Waiting for input...</p>
+      <p class="status status-info" id="statusText">Waiting for input...</p>
     </form>
   </div>
 
   <script>
     const form = document.getElementById("wifiForm");
     const statusText = document.getElementById("statusText");
+    const connectBtn = document.getElementById("connectBtn");
+    let pollInterval = null;
 
+    // --- Hàm helper để cập nhật status ---
+    function setStatus(message, type) {
+      statusText.textContent = message;
+      statusText.className = 'status status-' + type;
+    }
+
+    // --- Hàm Polling kiểm tra status ---
+    async function checkStatus() {
+      try {
+        const res = await fetch('/status');
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await res.json();
+
+        switch(data.status) {
+          case 'connecting':
+            setStatus(`Connecting... (Attempt ${data.attempt}/3)`, 'info');
+            break;
+          case 'success':
+            setStatus(`Success! Device IP: ${data.ip}. You can close this page.`, 'success');
+            clearInterval(pollInterval);
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect';
+            break;
+          case 'failed':
+            setStatus('Connection failed. Please check password and try again.', 'error');
+            clearInterval(pollInterval);
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect';
+            break;
+          case 'idle':
+            setStatus('Waiting for input...', 'info');
+            clearInterval(pollInterval);
+            connectBtn.disabled = false;
+            connectBtn.textContent = 'Connect';
+            break;
+        }
+      } catch (err) {
+        // Lỗi này thường xảy ra khi ESP32 AP tắt sau khi kết nối thành công
+        // Ta có thể giả định là kết nối thành công nếu lỗi xảy ra khi đang polling
+        console.error('Fetch error:', err);
+        if (statusText.className.includes('status-info')) { 
+          setStatus('Connection to device lost. Please check your network.', 'error');
+          clearInterval(pollInterval);
+          connectBtn.disabled = false;
+          connectBtn.textContent = 'Connect';
+        }
+      }
+    }
+
+    // --- Xử lý Submit Form ---
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (pollInterval) clearInterval(pollInterval); // Dừng polling cũ (nếu có)
+
       const ssid = document.getElementById("ssid").value;
       const password = document.getElementById("password").value;
-      statusText.textContent = "Connecting...";
+      
+      setStatus("Sending credentials...", "info");
+      connectBtn.disabled = true;
+      connectBtn.textContent = 'Connecting...';
 
-      // Chuẩn bị dữ liệu để gửi trong body
       const formData = new URLSearchParams();
       formData.append('ssid', ssid);
       formData.append('pass', password);
 
       try {
         const res = await fetch('/connect', {
-          method: 'POST', //
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: formData
         });
 
         if (res.ok) {
-          statusText.textContent = "Credentials sent. Awaiting connection status...";
+          // Bắt đầu Polling sau khi gửi thành công
+          setStatus("Credentials sent. Awaiting connection status...", "info");
+          pollInterval = setInterval(checkStatus, 200); // Check mỗi 0.2s
         } else {
-          statusText.textContent = "Failed to send credentials.";
-          statusText.style.color = "red";
+          setStatus("Failed to send credentials to device.", "error");
+          connectBtn.disabled = false;
+          connectBtn.textContent = 'Connect';
         }
       } catch (err) {
-        statusText.textContent = "Error connecting.";
-        statusText.style.color = "red";
+        setStatus("Error: Could not reach the device.", "error");
+        connectBtn.disabled = false;
+        connectBtn.textContent = 'Connect';
       }
     });
   </script>
 </body>
 </html>
-
 )rawliteral";
 
 
