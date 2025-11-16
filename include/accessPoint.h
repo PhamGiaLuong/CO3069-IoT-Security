@@ -7,6 +7,7 @@
 #include "global.h"
 
 #define BOOT_PIN 0
+#define LED_PIN 32
 
 enum ConnectState { IDLE, CONNECTING, SUCCESS, FAILED };
 

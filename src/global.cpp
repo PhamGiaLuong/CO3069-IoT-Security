@@ -1,10 +1,18 @@
 #include "global.h"
 
+SemaphoreHandle_t xDHTSemaphore = NULL;
+
 String apSsid = "IoT-Security-AP";
 String apPassword = "mmanm251";
 String wifiSsid = "";
 String wifiPassword = "";
 boolean isWifiConnected = false;
+float temperature = 0.0f;
+float humidity = 0.0f;
+
+const String tempErr = "ERROR: Timeout waiting for Temperature resource!";
+const String humErr = "ERROR: Timeout waiting for Humidity resource!";
+const String dataErr = "ERROR: Timeout waiting for Temperature & Humidity resource!";
 
 const char MAIN_PAGE[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -263,6 +271,19 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
 )rawliteral";
 
 
+
+void printTimestamp() {
+    unsigned long now = millis();
+    
+    unsigned long totalSeconds = now / 1000;
+    unsigned long hours = totalSeconds / 3600;
+    unsigned long minutes = (totalSeconds % 3600) / 60;
+    unsigned long seconds = totalSeconds % 60;
+    unsigned long centis = (now % 1000) / 10; 
+    
+    Serial.printf("%02lu:%02lu:%02lu.%02lu: ", hours, minutes, seconds, centis);
+}
+
 String getApSsid() {
     return apSsid;
 }
@@ -305,4 +326,59 @@ void setWifiConnectionStatus(boolean status) {
 
 const char* getMainPageHtml() {
     return MAIN_PAGE;
+}
+
+float getTemperatureData() {
+	float value = 0.0f;
+	if (xSemaphoreTake(xDHTSemaphore, DHT_LOCK_TIMEOUT) == pdTRUE) {
+		value = temperature;
+		xSemaphoreGive(xDHTSemaphore);
+	} else {
+		printTimestamp();
+		Serial.println(tempErr);
+	}
+	return value;
+}
+
+void setTemperatureData(float temp) {
+	if (xSemaphoreTake(xDHTSemaphore, DHT_LOCK_TIMEOUT) == pdTRUE) {
+		temperature = temp;
+		xSemaphoreGive(xDHTSemaphore);
+	} else {
+		printTimestamp();
+		Serial.println(tempErr);
+	}	
+}
+
+float getHumidityData() {
+	float value = 0.0f;
+	if (xSemaphoreTake(xDHTSemaphore, DHT_LOCK_TIMEOUT) == pdTRUE) {
+		value = humidity;
+		xSemaphoreGive(xDHTSemaphore);
+	} else {
+		printTimestamp();
+		Serial.println(humErr);
+	}
+	return value;
+}
+
+void setHumidityData(float hum) {
+	if (xSemaphoreTake(xDHTSemaphore, DHT_LOCK_TIMEOUT) == pdTRUE) {
+		humidity = hum;
+		xSemaphoreGive(xDHTSemaphore);
+	} else {
+		printTimestamp();
+		Serial.println(humErr);
+	}	
+}
+
+void setDHTData(float temp, float hum) {
+	if (xSemaphoreTake(xDHTSemaphore, DHT_LOCK_TIMEOUT) == pdTRUE) {
+		temperature = temp;
+		humidity = hum;
+		xSemaphoreGive(xDHTSemaphore);
+	} else {
+		printTimestamp();
+		Serial.println(dataErr);
+	}
 }
