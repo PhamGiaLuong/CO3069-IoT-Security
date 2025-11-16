@@ -1,18 +1,19 @@
-#include <Arduino.h>
+#include "global.h"
 
-// put function declarations here:
-int myFunction(int, int);
+#include "accessPoint.h"
+
 
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+    Serial.begin(115200);
+
+    // xTaskCreate(led_blinky, "Task LED Blink", 2048, NULL, 2, NULL);
+    // xTaskCreate(neo_blinky, "Task NEO Blink", 2048, NULL, 2, NULL);
+    // xTaskCreate(temp_humi_monitor, "Task TEMP HUMI Monitor", 2048, NULL, 2, NULL);
+    xTaskCreate(webServerTask, "Task Main Server", 8192, NULL, 2, NULL);
+    // xTaskCreate(tiny_ml_task, "Tiny ML Task", 2048, NULL, 2, NULL);
+    // xTaskCreate(coreiot_task, "CoreIOT Task", 4096, NULL, 2, NULL);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  
 }
