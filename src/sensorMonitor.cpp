@@ -13,7 +13,7 @@ void readSensorTask(void *pvParameters){
         float humidity = dht.readHumidity();
 
         if(isnan(temperature) || isnan(humidity)) {
-            Serial.println("Failed to read from DHT sensor!");
+            printLog("Failed to read from DHT sensor!");
             temperature = humidity =  -1;
         }
 
@@ -39,12 +39,18 @@ void randomDataTask(void *pvParameters) {
         // Print the results
         printLog("Humidity: %.2f%% - Temperature: %.2f°C", humidity, temperature);
 
+        StaticJsonDocument<256> doc;
+        doc["device_id"] = "esp32_co3069_01";
+        doc["temperature"] = serialized(String(temperature, 2));
+        doc["humidity"] = serialized(String(humidity, 2));
+        doc["status"] = "unsecure";
         char msgBuffer[150];
-        snprintf(msgBuffer, sizeof(msgBuffer), 
-            "{\"device_id\": \"esp32_co3069_01\", \"temperature\": %.2f, \"humidity\": %.2f, \"status\": \"unsecure\"}", 
-            temperature, humidity);
-        
-        mqttPublish(MQTT_TOPIC, msgBuffer);
+        size_t n = serializeJson(doc, msgBuffer, sizeof(msgBuffer));
+        if (n > 0) {
+            mqttPublish(MQTT_TOPIC, msgBuffer);
+        } else {
+            printLog("ERROR: ArduinoJson serialization failed!");
+        }
         
 		vTaskDelayUntil(&lastWakeTime, period);
     }

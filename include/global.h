@@ -7,6 +7,7 @@
 #include "freertos/semphr.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #define DHT_LOCK_TIMEOUT pdMS_TO_TICKS(200)
 extern SemaphoreHandle_t xDHTSemaphore;
