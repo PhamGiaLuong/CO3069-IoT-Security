@@ -20,12 +20,7 @@ void readSensorTask(void *pvParameters){
         setDHTData(temperature, humidity);
 
         // Print the results
-        printTimestamp();
-        Serial.print("Humidity: ");
-        Serial.print(humidity);
-        Serial.print("% - Temperature: ");
-        Serial.print(temperature);
-        Serial.println("°C");
+        printLog("Humidity: %.2f% - Temperature: %.2f°C", humidity, temperature);
         
 		vTaskDelayUntil(&lastWakeTime, period);
     }
@@ -42,12 +37,14 @@ void randomDataTask(void *pvParameters) {
         setDHTData(temperature, humidity);
 
         // Print the results
-		printTimestamp();
-        Serial.print("Humidity: ");
-        Serial.print(humidity);
-        Serial.print("% - Temperature: ");
-        Serial.print(temperature);
-        Serial.println("°C");
+        printLog("Humidity: %.2f%% - Temperature: %.2f°C", humidity, temperature);
+
+        char msgBuffer[150];
+        snprintf(msgBuffer, sizeof(msgBuffer), 
+            "{\"device_id\": \"esp32_co3069_01\", \"temperature\": %.2f, \"humidity\": %.2f, \"status\": \"unsecure\"}", 
+            temperature, humidity);
+        
+        mqttPublish(MQTT_TOPIC, msgBuffer);
         
 		vTaskDelayUntil(&lastWakeTime, period);
     }

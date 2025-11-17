@@ -284,6 +284,19 @@ void printTimestamp() {
     Serial.printf("%02lu:%02lu:%02lu.%02lu: ", hours, minutes, seconds, centis);
 }
 
+void printLog(const char * format, ...) {
+    printTimestamp();
+    
+    char buffer[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+    
+    Serial.println(buffer);
+}
+
+
 String getApSsid() {
     return apSsid;
 }
@@ -334,8 +347,7 @@ float getTemperatureData() {
 		value = temperature;
 		xSemaphoreGive(xDHTSemaphore);
 	} else {
-		printTimestamp();
-		Serial.println(tempErr);
+		printLog("%s", tempErr);
 	}
 	return value;
 }
@@ -345,8 +357,7 @@ void setTemperatureData(float temp) {
 		temperature = temp;
 		xSemaphoreGive(xDHTSemaphore);
 	} else {
-		printTimestamp();
-		Serial.println(tempErr);
+		printLog("%s", tempErr);
 	}	
 }
 
@@ -356,8 +367,7 @@ float getHumidityData() {
 		value = humidity;
 		xSemaphoreGive(xDHTSemaphore);
 	} else {
-		printTimestamp();
-		Serial.println(humErr);
+		printLog("%s", humErr);
 	}
 	return value;
 }
@@ -367,8 +377,7 @@ void setHumidityData(float hum) {
 		humidity = hum;
 		xSemaphoreGive(xDHTSemaphore);
 	} else {
-		printTimestamp();
-		Serial.println(humErr);
+		printLog("%s", humErr);
 	}	
 }
 
@@ -378,7 +387,6 @@ void setDHTData(float temp, float hum) {
 		humidity = hum;
 		xSemaphoreGive(xDHTSemaphore);
 	} else {
-		printTimestamp();
-		Serial.println(dataErr);
+		printLog("%s", dataErr);
 	}
 }

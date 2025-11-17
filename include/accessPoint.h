@@ -5,6 +5,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include "global.h"
+#include "mqttClient.h"
 
 #define BOOT_PIN 0
 #define LED_PIN 32

@@ -81,10 +81,7 @@ void startAP() {
 void connectToWiFi() {
 	String w_ssid = getWifiSsid();
 	String w_pass = getWifiPassword();
-    printTimestamp();
-	Serial.print("Connecting to WiFi: '");
-	Serial.print(w_ssid);
-	Serial.println("'");
+	printLog("Connecting to WiFi: '%s'", w_ssid);
 	WiFi.mode(WIFI_AP_STA);
 	WiFi.begin(w_ssid.c_str(), w_pass.c_str());
 	connectStartMs = millis();
@@ -95,8 +92,7 @@ void setupServer() {
 	server.on("/connect", HTTP_POST, handleConnect);
 	server.on("/status", HTTP_GET, handleStatus);
 	server.begin();
-    printTimestamp();
-	Serial.println("Web Server started.");
+    printLog("Web Server started.");
 }
 
 // ========== Main task ==========
@@ -107,6 +103,7 @@ void webServerTask(void *pvParameters) {
 	setupServer();
 	while (1) {
 		server.handleClient();
+		handleMQTTConnection();
 		// Handle led effect
 		if (getWifiConnectionStatus() == false) {
 			if (millis() - lastBlinkMs > 250) { 
@@ -123,8 +120,7 @@ void webServerTask(void *pvParameters) {
 		if (digitalRead(BOOT_PIN) == LOW) {
 			vTaskDelay(pdMS_TO_TICKS(100)); // Debounce
 			if (digitalRead(BOOT_PIN) == LOW) {
-        		printTimestamp();
-				Serial.println("Button Pressed: Force AP Mode");
+        		printLog("Button Pressed: Force AP Mode");
 				if (!isAPMode) {
 				startAP();
 				}
@@ -134,9 +130,7 @@ void webServerTask(void *pvParameters) {
 		// Connect wifi
 		if (connecting) {
 			if (WiFi.status() == WL_CONNECTED) {
-		        printTimestamp();
-				Serial.print("WiFi Connected! IP: ");
-				Serial.println(WiFi.localIP());
+		        printLog("WiFi Connected! IP: %s", WiFi.localIP().toString().c_str());
 				
 				setWifiConnectionStatus(true);
 				connecting = false; 
@@ -148,14 +142,12 @@ void webServerTask(void *pvParameters) {
 				connectRetryCount++;
 				
 				if (connectRetryCount < 3) {
-        			printTimestamp();
-					Serial.println("Connection failed. Retrying... (Attempt " + String(connectRetryCount + 1) + "/3)");
+        			printLog("Connection failed. Retrying... (Attempt %d/3)", connectRetryCount + 1);
 					connectStartMs = millis();
 					connectToWiFi();
 				} else {
 					// Try 3 times => failed
-        			printTimestamp();
-					Serial.println("Connection failed after 3 attempts. Reverting to AP Mode.");
+        			printLog("Connection failed after 3 attempts. Reverting to AP Mode.");
 					startAP();
 					connectState = FAILED;
 				}
@@ -164,16 +156,14 @@ void webServerTask(void *pvParameters) {
 		if (switchingToSta) {
 			if (millis() - switchStaTimer > 5000) {
 				isAPMode = false;
-        		printTimestamp();
-				Serial.println("Switching to STA-Only mode.");
+        		printLog("Switching to STA-Only mode.");
 				WiFi.mode(WIFI_STA);
 				switchingToSta = false;
 			}
 		}
 		if (!isAPMode && !connecting && WiFi.status() != WL_CONNECTED) {
 			if(getWifiConnectionStatus() == true) {
-        		printTimestamp();
-				Serial.println("WiFi connection lost.");
+        		printLog("WiFi connection lost.");
 			}
 			setWifiConnectionStatus(false);
 		}

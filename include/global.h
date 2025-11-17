@@ -5,6 +5,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
+#include <WiFi.h>
+#include <PubSubClient.h>
 
 #define DHT_LOCK_TIMEOUT pdMS_TO_TICKS(200)
 extern SemaphoreHandle_t xDHTSemaphore;
@@ -28,5 +30,6 @@ void setHumidityData(float hum);
 void setDHTData(float temp, float hum);
 
 void printTimestamp();
+void printLog(const char * format, ...);
 
 #endif
