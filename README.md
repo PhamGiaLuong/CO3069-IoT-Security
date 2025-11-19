@@ -1,7 +1,7 @@
-# BÀI TẬP LỚN: MẬT MÃ VÀ AN NINH MẠNG (HK251 - CO2069)
+# BÀI TẬP LỚN: MẬT MÃ VÀ AN NINH MẠNG (HK251 - CO3069)
 
-Trường Đại học Bách khoa - ĐHQG TP.HCM
-Khoa Khoa học & Kỹ thuật Máy tính
+Khoa Khoa học & Kỹ thuật Máy tính, Trường Đại học Bách khoa - ĐHQG TP.HCM
+
 
 ## Đề tài 7: Bảo mật Internet vạn vật (IoT)
 
@@ -16,7 +16,7 @@ Repo này chứa mã nguồn cho bài tập lớn của môn Mật mã và An ni
 | 1   | Trương Anh Khôi | 2211707 | khoi.truongtak0601@hcmut.edu.vn |
 | 2   | Phạm Gia Lương  | 2211960 | luong.pham2211960@hcmut.edu.vn  |
 
-### 2. Mô tả đề tài
+### 2. Mô tả đề tài (updating)
 
 Mục tiêu của đề tài này là chỉ ra các lỗ hổng bảo mật trong một hệ thống IoT cơ bản và sau đó triển khai các biện pháp để khắc phục.
 
@@ -58,7 +58,7 @@ Phần này mô tả cách chạy mã nguồn mô phỏng (trong thư mục `sre
 
 ---
 
-### 5. Cấu trúc thư mục
+### 5. Cấu trúc thư mục (updating)
 
 ```
 
