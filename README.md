@@ -1,7 +1,7 @@
-# BÀI TẬP LỚN: MẬT MÃ VÀ AN NINH MẠNG (HK251 - CO2069)
+# BÀI TẬP LỚN: MẬT MÃ VÀ AN NINH MẠNG (HK251 - CO3069)
 
-Trường Đại học Bách khoa - ĐHQG TP.HCM
-Khoa Khoa học & Kỹ thuật Máy tính
+Khoa Khoa học & Kỹ thuật Máy tính, Trường Đại học Bách khoa - ĐHQG TP.HCM
+
 
 ## Đề tài 7: Bảo mật Internet vạn vật (IoT)
 
@@ -18,7 +18,14 @@ Repo này chứa mã nguồn cho bài tập lớn của môn Mật mã và An ni
 
 ### 2. Mô tả đề tài
 
-Mục tiêu của đề tài này là chỉ ra các lỗ hổng bảo mật trong một hệ thống IoT cơ bản và sau đó triển khai các biện pháp để khắc phục.
+Đề tài tập trung vào việc giải quyết vấn đề bảo mật dữ liệu (Confidentiality) trong giao tiếp giữa thiết bị IoT và máy chủ thông qua giao thức MQTT. Trong các hệ thống IoT cơ bản, dữ liệu thường được gửi dưới dạng văn bản thuần (plaintext), khiến chúng dễ bị nghe lén và đánh cắp thông tin.
+
+Dự án này xây dựng một hệ thống IoT minh họa gồm:
+
+  * **Thiết bị IoT (ESP32):** Đóng vai trò thu thập dữ liệu môi trường (Nhiệt độ, Độ ẩm). Thiết bị có khả năng hoạt động ở chế độ Access Point (AP) để cấu hình WiFi ban đầu.
+  * **Cơ chế bảo mật:** Triển khai mã hóa đầu cuối (End-to-End Encryption) ngay trên vi điều khiển. Dữ liệu cảm biến được đóng gói thành JSON, sau đó mã hóa bằng thuật toán **AES-128 (Chế độ CBC)** và mã hóa **Base64** trước khi gửi đi.
+  * **Giao thức truyền thông:** Sử dụng MQTT để gửi dữ liệu đã mã hóa lên Broker công cộng (`broker.hivemq.com`).
+  * **Client (Python):** Một ứng dụng trên máy tính đóng vai trò nhận dữ liệu từ MQTT Broker, thực hiện giải mã AES để khôi phục và hiển thị thông tin gốc.
 
 ### 3. Các nội dung cần thực hiện
 
@@ -58,16 +65,28 @@ Phần này mô tả cách chạy mã nguồn mô phỏng (trong thư mục `sre
 
 ---
 
-### 5. Cấu trúc thư mục
+### 5\. Cấu trúc thư mục
+
+Dưới đây là cấu trúc tổ chức mã nguồn của dự án:
 
 ```
-
 .
-├── README.md           \# Hướng dẫn sử dụng (tệp này)
-├── platformio.ini      \# Cấu hình dự án và các thư viện cho PlatformIO
-├── include/
-├── lib/
-├── src/
-└── report.pdf          \
-
+├── client/
+│   └── mqtt_receiver.py    # Script Python nhận, giải mã và hiển thị dữ liệu từ MQTT
+├── include/                # Các file header (.h) khai báo hàm và biến toàn cục
+│   ├── accessPoint.h       # Header cho module WiFi AP và Web Server
+│   ├── crypto_helper.h     # Header chứa khóa bí mật (Key, IV) và khai báo hàm mã hóa
+│   ├── global.h            # Các biến toàn cục và thư viện dùng chung
+│   ├── mqttClient.h        # Header cho module xử lý MQTT
+│   └── sensorMonitor.h     # Header cho module đọc cảm biến và xử lý dữ liệu
+├── lib/                    # Các thư viện phụ thuộc (ArduinoJson, DHT, PubSubClient,...)
+├── src/                    # Mã nguồn chính cho ESP32 (.cpp)
+│   ├── accessPoint.cpp     # Xử lý chế độ AP, Web Server cấu hình WiFi (Captive Portal)
+│   ├── crypto_helper.cpp   # Thực thi mã hóa AES-128-CBC và Base64
+│   ├── global.cpp          # Định nghĩa các biến toàn cục và hàm tiện ích (log, timestamp)
+│   ├── main.cpp            # Điểm bắt đầu chương trình, khởi tạo các FreeRTOS Task
+│   ├── mqttClient.cpp      # Quản lý kết nối MQTT, kết nối lại và gửi tin nhắn
+│   └── sensorMonitor.cpp   # Task đọc cảm biến (hoặc giả lập dữ liệu), đóng gói JSON và gọi hàm mã hóa
+├── platformio.ini          # File cấu hình dự án PlatformIO (board, baud rate, thư viện)
+└── README.md               # Hướng dẫn sử dụng và thông tin dự án
 ```
