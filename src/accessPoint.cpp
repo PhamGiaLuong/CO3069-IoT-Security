@@ -45,31 +45,43 @@ void handleStatus() {
 void handleConnect() {
 	String n_ssid = server.arg("ssid");
 	String n_pass = server.arg("pass");
-	if (n_ssid.length() > 0) {
-		setWifiSsid(n_ssid);
-		setWifiPassword(n_pass);
-		server.send(200, "text/plain", "OK");
-		
-		isAPMode = false;
-		connecting = true;
-		connectStartMs = millis();
-		connectRetryCount = 0;
-		connectState = CONNECTING;
-		
-		connectToWiFi();
-	} else {
-		server.send(400, "text/plain", "SSID cannot be empty");
-	}
+
+	if (n_ssid.length() == 0 || n_ssid.length() > 32) {
+        server.send(400, "text/plain", "Error: SSID must be 1-32 characters.");
+        printLog("Security Warning: Invalid SSID length received (%d chars)", n_ssid.length());
+        return;
+    }
+
+	if (n_pass.length() > 0 && (n_pass.length() < 8 || n_pass.length() > 63)) {
+        server.send(400, "text/plain", "Error: Password must be 8-63 characters.");
+        printLog("Security Warning: Invalid Password length received (%d chars)", n_pass.length());
+        return;
+    }
+
+	setWifiSsid(n_ssid);
+    setWifiPassword(n_pass);
+    server.send(200, "text/plain", "OK");
+    
+    isAPMode = false;
+    connecting = true;
+    connectStartMs = millis();
+    connectRetryCount = 0;
+    connectState = CONNECTING;
+    
+    connectToWiFi();
 }
 // ========== WiFi ==========
 void startAP() {
 	String apName = getApSsid();
 	String apPass = getApPassword();
+	uint32_t randomNum = ESP.getEfuseMac() & 0xFFFFFFFF;
+    String dynamicPass = "IoTs-" + String(randomNum, HEX);
 	WiFi.mode(WIFI_AP);
-	WiFi.softAP(apName.c_str(), apPass.c_str());
+	WiFi.softAP(apName.c_str(), dynamicPass.c_str());
 
 	Serial.println("--------------------------------");
 	Serial.print("AP Started: "); Serial.println(apName);
+	Serial.print("Password:   "); Serial.println(dynamicPass);
 	Serial.print("IP Address: "); Serial.println(WiFi.softAPIP());
 	Serial.println("--------------------------------");
 	isAPMode = true;

@@ -149,11 +149,26 @@ const char MAIN_PAGE[] PROGMEM = R"rawliteral(
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    .security-alert {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Wi-Fi Settings</h2>
+    <div class="security-alert">
+      ⚠️ <strong>Security Warning:</strong> This connection is not encrypted (HTTP). 
+      Ensure no one is snooping before entering your password.
+    </div>
     <form id="wifiForm">
       <div class="form-group">
         <label for="ssid">Wi-Fi SSID</label>
