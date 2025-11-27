@@ -15,7 +15,7 @@ Repo này chứa mã nguồn cho bài tập lớn của môn Mật mã và An ni
 | 1   | Trương Anh Khôi | 2211707 | khoi.truongtak0601@hcmut.edu.vn |
 | 2   | Phạm Gia Lương  | 2211960 | luong.pham2211960@hcmut.edu.vn  |
 
-### 2. Mô tả đề tài (updating)
+### 2. Mô tả đề tài
 
 Đề tài tập trung vào việc giải quyết vấn đề bảo mật dữ liệu (Confidentiality) trong giao tiếp giữa thiết bị IoT và máy chủ thông qua giao thức MQTT. Trong các hệ thống IoT cơ bản, dữ liệu thường được gửi dưới dạng văn bản thuần (plaintext), khiến chúng dễ bị nghe lén và đánh cắp thông tin.
 
@@ -39,7 +39,7 @@ Các nhiệm vụ chính của dự án này bao gồm:
 
 ### 4. Hướng dẫn sử dụng (Mô phỏng)
 
-Phần này mô tả cách chạy mã nguồn mô phỏng (trong thư mục `sres/`).
+Phần này mô tả cách chạy mã nguồn mô phỏng (trong thư mục `srcs/`).
 
 #### Yêu cầu
 
@@ -57,14 +57,14 @@ Phần này mô tả cách chạy mã nguồn mô phỏng (trong thư mục `sre
 4.  Mở Serial Monitor (Baud rate: `115200`) để theo dõi log.
 5.  Thiết bị sẽ khởi động ở chế độ Access Point (AP).
     - **Tên (SSID):** `IoT-Security-AP`
-    - **Mật khẩu:** `mmanm251`
+    - **Mật khẩu:** `IoTs-{MAC}` (xem trong console)
 6.  Kết nối vào mạng AP này và truy cập IP `192.168.4.1` để cấu hình Wi-Fi cho thiết bị.
 7.  Sau khi kết nối Wi-Fi thành công, thiết bị sẽ tự động kết nối đến MQTT Broker và bắt đầu gửi dữ liệu.
 8.  Sử dụng MQTT Client để theo dõi topic: `hcmut/co3069/iot_security/data` và xem dữ liệu.
 
 ---
 
-### 5. Cấu trúc thư mục (updating)
+### 5. Cấu trúc thư mục
 
 ```
 .
